@@ -12,6 +12,7 @@ import com.xinli.portalclient.model.RequestModel;
 import com.xinli.portalclient.model.ReturnMessage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -30,7 +31,7 @@ public class BitmapUtils {
     HttpURLConnection httpURLConnection = null;
     boolean isredirect = true;
     try {
-      Log.i("init redirect url=======", requestUrl);
+      Log.i("init redirect url", requestUrl);
       URL myFileUrl = new URL(requestUrl);
       try {
         httpURLConnection = (HttpURLConnection) myFileUrl.openConnection();
@@ -60,7 +61,7 @@ public class BitmapUtils {
         closeStream(inputStream, null);
         return isredirect;
       } catch (IOException e) {
-        Log.e("Cinit redirect url error:", e.getMessage());
+        Log.e("Cinit redirecterror:", e.getMessage());
       }
     } catch (IOException e3) {
       throw new RuntimeException(e3.getMessage());
@@ -82,7 +83,7 @@ public class BitmapUtils {
         initRealAddress(Config.firstRreqUrl);
       }
 
-      Log.i("request key and pic=======", requestUrl);
+      Log.i("request key and pic", requestUrl);
       RequestModel keyResult = getKey(clientVersion, localIp);
       if (ReturnMessage.VERSIONCHECK.equals(keyResult.getMessage())
           || ReturnMessage.NATCHECK.equals(keyResult.getMessage())) {
@@ -234,26 +235,21 @@ public class BitmapUtils {
     return requestResult;
   }
 
-  /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-  public static void closeStream(java.io.InputStream r1_in, java.io.OutputStream r2_out) {
-    throw new UnsupportedOperationException(
-        "Method not decompiled: com.xinli.portalclient.util.BitmapUtils.closeStream(java.io.InputStream, java.io.OutputStream):void");
-        /*
-        if (r1 == 0) goto L_0x0005;
-    L_0x0002:
-        r1.close();	 Catch:{ IOException -> 0x000b }
-    L_0x0005:
-        if (r2 == 0) goto L_0x000a;
-    L_0x0007:
-        r2.close();	 Catch:{ IOException -> 0x000b }
-    L_0x000a:
-        return;
-    L_0x000b:
-        r0 = move-exception;
-        r0.printStackTrace();
-        goto L_0x000a;
-        */
+  public static void closeStream(InputStream paramInputStream, OutputStream paramOutputStream)
+  {
+    if (paramInputStream != null) {}
+    try
+    {
+      paramInputStream.close();
+      if (paramOutputStream != null) {
+        paramOutputStream.close();
+      }
+      return;
+    }
+    catch (IOException localIOException)
+    {
+      localIOException.printStackTrace();
+    }
   }
 
   public static void main(String[] args) {

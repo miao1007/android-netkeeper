@@ -11,7 +11,7 @@ import java.util.List;
 import org.dom4j.swing.XMLTableColumnDefinition;
 
 public class WifiUtil {
-    private static final String TAG = "wifi";
+    private static final String TAG = Context.WIFI_SERVICE;
     Context mContext;
     int mNetworkID;
     String mSSID;

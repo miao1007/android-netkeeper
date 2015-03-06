@@ -779,17 +779,17 @@ public class MainActivity extends BaseActivity {
 
         if (imageView == null) {
           Log.e(TAG, "imageView == null");
-          Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key……");
+          Log.d(TAG, "refresh image and key");
           MainActivity.this.reqResource = MainActivity.this.setAuthPicAndKey();
-          Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key成功……");
+          Log.d(TAG, "refresh image and key done");
           return;
         } else {
-          Log.e(TAG, "imageView != null");
-          Log.d(TAG, "onCreate==准备刷新手势……");
+          Log.d(TAG, "imageView != null");
+          Log.d(TAG, "refresh image only!");
           imageView.bitmap =
               BitmapUtils.getPicture(reqResource.getSessionId(), screenWidth, screenHeight)
                   .getBitmap();
-          Log.d(TAG, "onCreate==刷新手势成功……");
+          Log.d(TAG, "refresh image done");
           return;
         }
       }
@@ -959,11 +959,10 @@ public class MainActivity extends BaseActivity {
     if (isPrivateIpAdress()) {
 
       exceptionView();
-      Toast.makeText(getApplicationContext(),
-          "\u7f51\u7edc\u5f02\u5e38\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\uff01", UPDATA_CLIENT)
-          .show();
+      Log.e(TAG,"isPrivateIpAdress");
       return null;
     }
+    
     this.gestureLayout.removeView(this.errView);
     try {
       this.logger.debug("onCreate get key start");

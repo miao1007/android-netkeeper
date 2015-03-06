@@ -15,17 +15,15 @@ public class Secret
   
   public static String byte2hex(byte[] paramArrayOfByte)
   {
-    String str1 = "";
-    int i = 0;
-    if (i >= paramArrayOfByte.length) {
-      return str1.toUpperCase();
-    }
-    String str2 = Integer.toHexString(0xFF & paramArrayOfByte[i]);
-    if (str2.length() == 1) {}
-    for (str1 = str1 + "0" + str2;; str1 = str1 + str2)
+    String str1 = new String();
+    for (int i = 0; ; i++)
     {
-      i++;
-      break;
+      if (i >= paramArrayOfByte.length)
+        return str1.toString();
+      String str2 = Integer.toHexString(0xFF & paramArrayOfByte[i]).toLowerCase();
+      if (str2.length() == 1)
+        str2 = '0' + str2;
+      str1 = str1 + str2;
     }
   }
   

@@ -35,8 +35,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -207,14 +205,13 @@ public class MainActivity extends BaseActivity {
         URL url = new URL(
             new StringBuilder(String.valueOf(Config.realUrl)).append("/apps/version.xml")
                 .toString());
-        System.out.println(
-            new StringBuilder("\u5347\u7ea7url=========").append(url.toString()).toString());
+
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(BitmapUtils.REQUEST_TIMEOUT);
         MainActivity.this.info = MainActivity.getUpdataInfo(conn.getInputStream());
         //no need to update
         if (MainActivity.this.info.getVersion().equals(MainActivity.this.getVersionName())) {
-          MainActivity.this.logger.debug("版本号相同无需升级");
+          Log.d(TAG, "版本号相同无需升级");
           return;
         }
       } catch (Exception e) {
@@ -310,17 +307,12 @@ public class MainActivity extends BaseActivity {
       }
 
       public void onClick(View v) {
-        Log.w("\u70b9\u51fb\u4e0b\u62c9\u6846",
-            new StringBuilder("\u70b9\u51fb\u4e0b\u62c9\u6846").append(this.val$position)
-                .toString());
-        MainActivity.this.username.setText(((String[]) MainActivity.this.sp.getAll()
-            .keySet()
-            .toArray(new String[0]))[this.val$position]);
-        MainActivity.this.usernametext = MainActivity.this.username.getText().toString();
-        MainActivity.this.password =
-            MainActivity.this.sp.getString(MainActivity.this.usernametext, "");
-        Log.w("username=", MainActivity.this.usernametext);
-        MainActivity.this.popView.dismiss();
+        Log.d("点击下拉框", this.val$position + "");
+        usernametext = "123_MyAdapter";
+        password = "passwd_MyAdapter";
+        username.setText(usernametext);
+        Log.d("username=", MainActivity.this.usernametext);
+        popView.dismiss();
       }
     }
 
@@ -355,22 +347,6 @@ public class MainActivity extends BaseActivity {
       holder.tv.setText(((HashMap) this.data.get(position)).get("name").toString());
       holder.tv.setOnClickListener(new AnonymousClass_1(position));
       return convertView;
-    }
-  }
-
-  class SpinnerXMLSelectedListener implements OnItemSelectedListener {
-    SpinnerXMLSelectedListener() {
-    }
-
-    public void onItemSelected(AdapterView<?> adapterView, View arg1, int arg2, long arg3) {
-      MainActivity.this.usernametext = (String) MainActivity.this._Adapter.getItem(arg2);
-      MainActivity.this.password =
-          MainActivity.this.sp.getString(MainActivity.this.usernametext, "");
-      Log.v("\u9009\u62e9\u5e10\u53f7\u662f\uff1a",
-          (String) MainActivity.this._Adapter.getItem(arg2));
-    }
-
-    public void onNothingSelected(AdapterView<?> adapterView) {
     }
   }
 
@@ -452,23 +428,20 @@ public class MainActivity extends BaseActivity {
             //intent.putExtra("loginTime", System.currentTimeMillis());
             //intent.putExtra("authFlag", true);
             //MainActivity.this.startActivity(intent);
+            break;
 
           case GET_UNDATAINFO_ERROR:
             MainActivity.this.mDialog.cancel();
             Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
                 .show();
+            break;
+
+          //error == 2
           case DOWN_ERROR:
-            MainActivity.this.logger.debug(
-                "\u6311\u6218\u7801\u8fc7\u671f,\u91cd\u65b0\u83b7\u53d6\u56fe\u7247\u548ckey");
+            Log.d(TAG, "挑战码过期,重新获取图片和key");
             try {
               if (MainActivity.this.isPrivateIpAdress()) {
-                MainActivity.this.exceptionView();
-                MainActivity.this.logger.debug(
-                    "\u662f\u79c1\u7f51\u5730\u5740\u2026\u2026\u5e94\u8be5\u8fd4\u56de");
-                Toast.makeText(MainActivity.this.getApplicationContext(),
-                    "\u7f51\u7edc\u5f02\u5e38\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\uff01",
-                    UPDATA_CLIENT).show();
-                MainActivity.this.mDialog.cancel();
+                Log.e(TAG, "isPrivateIpAdress");
                 return;
               }
               MainActivity.this.logger.debug("\u4e0d\u662f\u79c1\u7f51\u5730\u5740\u2026\u2026");
@@ -518,19 +491,23 @@ public class MainActivity extends BaseActivity {
                   "\u83b7\u53d6\u624b\u52bf\u5931\u8d25\uff0c\u8bf7\u70b9\u51fb\u6309\u94ae\u91cd\u65b0\u8bf7\u6c42\u624b\u52bf",
                   UPDATA_CLIENT).show();
             }
+            break;
           case INIT_RESET_WIFI:
             MainActivity.this.mDialog.cancel();
             Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
                 .show();
+            break;
           case UPDATA_CLIENT_FORCE:
             MainActivity.this.mDialog.cancel();
             MainActivity.this.exceptionView();
             Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
                 .show();
+            break;
           case 100:
             MainActivity.this.mDialog.cancel();
             Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
                 .show();
+            break;
           default:
             break;
         }
@@ -568,7 +545,7 @@ public class MainActivity extends BaseActivity {
   }
 
   private void showDialog() {
-    this.logger.debug("showDialog==step1==");
+    Log.v(TAG, "showDialog");
     this.mWifiUtil = new WifiManagerUtil(this, this.logger);
     this.mWifiUtil.getWifiInfo();
     this.mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -688,7 +665,7 @@ public class MainActivity extends BaseActivity {
     if (activityList.size() > 1) {
       this.logger.debug(new StringBuilder("activityList.size>1 ==usernametext ==========").append(
           this.usernametext).toString());
-      Log.d(TAG,"activityList.size>1");
+      Log.d(TAG, "activityList.size>1");
       //Intent intent = new Intent();
       //intent.setClass(this, SucessActivity.class);
       //intent.putExtra("authFlag", true);
@@ -784,31 +761,26 @@ public class MainActivity extends BaseActivity {
       public void onClick(View v) {
         if (MainActivity.this.CheckNetworkState()) {
           try {
-            if (MainActivity.this.isPrivateIpAdress()) {
-              MainActivity.this.logger.debug(
-                  "onCreate==\u79c1\u7f51\u5730\u5740\u6362\u5f20\u56fe\u7247========");
-              MainActivity.this.exceptionView();
-              Toast.makeText(MainActivity.this.getApplicationContext(),
-                  "\u7f51\u7edc\u5f02\u5e38\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\uff01",
-                  UPDATA_CLIENT).show();
-              return;
-            } else if (MainActivity.this.imageView != null) {
-              MainActivity.this.logger.debug(
-                  "onCreate==\u51c6\u5907\u5237\u65b0\u624b\u52bf\u2026\u2026");
-              MainActivity.this.imageView.bitmap =
-                  BitmapUtils.getPicture(MainActivity.this.reqResource.getSessionId(),
-                      MainActivity.this.screenWidth, MainActivity.this.screenHeight).getBitmap();
-              MainActivity.this.logger.debug(
-                  "onCreate==\u5237\u65b0\u624b\u52bf\u6210\u529f\u2026\u2026");
-              return;
-            } else {
-              MainActivity.this.logger.debug(
-                  "onCreate==\u70b9\u51fb\u6362\u5f20\u56fe\u7247\uff1a\u91cd\u65b0\u8bf7\u6c42\u5237\u65b0\u624b\u52bf\u548ckey\u2026\u2026");
-              MainActivity.this.reqResource = MainActivity.this.setAuthPicAndKey();
-              MainActivity.this.logger.debug(
-                  "onCreate==\u70b9\u51fb\u6362\u5f20\u56fe\u7247\uff1a\u91cd\u65b0\u8bf7\u6c42\u5237\u65b0\u624b\u52bf\u548ckey\u6210\u529f\u2026\u2026");
+            if (isPrivateIpAdress()) {
+              Log.e(TAG, "isPrivateIpAdress");
               return;
             }
+
+            if (imageView == null) {
+              Log.e(TAG, "imageView == null");
+              Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key……");
+              MainActivity.this.reqResource = MainActivity.this.setAuthPicAndKey();
+              Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key成功……");
+              return;
+            } else {
+              Log.d(TAG, "onCreate==准备刷新手势……");
+              imageView.bitmap =
+                  BitmapUtils.getPicture(reqResource.getSessionId(), screenWidth, screenHeight)
+                      .getBitmap();
+              Log.d(TAG, "onCreate==刷新手势成功……");
+              return;
+            }
+            
           } catch (Exception e) {
             Toast.makeText(MainActivity.this.getApplicationContext(),
                 "\u83b7\u53d6\u624b\u52bf\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u6216\u7a0d\u5019\u518d\u8bd5",
@@ -851,7 +823,7 @@ public class MainActivity extends BaseActivity {
       try {
         this.logger.debug("onCreate ===step8=====");
         if (!BitmapUtils.initRealAddress(Config.firstRreqUrl)) {
-          Log.d(TAG,"!BitmapUtils.initRealAddress(Config.firstRreqUrl))");
+          Log.d(TAG, "!BitmapUtils.initRealAddress(Config.firstRreqUrl))");
 
           //Intent intent = new Intent();
           //intent.setClass(this, SucessActivity.class);
@@ -998,7 +970,7 @@ public class MainActivity extends BaseActivity {
   private RequestModel setAuthPicAndKey() {
 
     if (isPrivateIpAdress()) {
-   
+
       exceptionView();
       Toast.makeText(getApplicationContext(),
           "\u7f51\u7edc\u5f02\u5e38\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\uff01", UPDATA_CLIENT)

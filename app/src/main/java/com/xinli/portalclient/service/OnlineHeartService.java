@@ -28,6 +28,7 @@ public class OnlineHeartService extends Service {
       super.handleMessage(paramAnonymousMessage);
     }
   };
+  
   private Handler proxyHandler = new Handler();
   private Runnable proxyRunnable = new Runnable() {
     public void run() {

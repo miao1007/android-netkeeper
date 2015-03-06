@@ -103,17 +103,17 @@ public class BitmapUtils {
     }
   }
 
-  public static Bitmap getLoacalBitmapByAssets(Context c, String url) {
-    InputStream in = null;
+  public static Bitmap getLoacalBitmapByAssets(Context paramContext, String paramString) {
+    InputStream localInputStream = null;
     try {
-      in = c.getResources().getAssets().open(url);
-      Bitmap bitmap = BitmapFactory.decodeStream(in);
-      closeStream(in, null);
-      return bitmap;
-    } catch (IOException e) {
-      e.printStackTrace();
-      closeStream(in, null);
+      localInputStream = paramContext.getResources().getAssets().open(paramString);
+      Bitmap localBitmap = BitmapFactory.decodeStream(localInputStream);
+      return localBitmap;
+    } catch (IOException localIOException) {
+      localIOException.printStackTrace();
       return null;
+    } finally {
+      closeStream(localInputStream, null);
     }
   }
 
@@ -235,19 +235,16 @@ public class BitmapUtils {
     return requestResult;
   }
 
-  public static void closeStream(InputStream paramInputStream, OutputStream paramOutputStream)
-  {
-    if (paramInputStream != null) {}
-    try
-    {
+  public static void closeStream(InputStream paramInputStream, OutputStream paramOutputStream) {
+    if (paramInputStream != null) {
+    }
+    try {
       paramInputStream.close();
       if (paramOutputStream != null) {
         paramOutputStream.close();
       }
       return;
-    }
-    catch (IOException localIOException)
-    {
+    } catch (IOException localIOException) {
       localIOException.printStackTrace();
     }
   }

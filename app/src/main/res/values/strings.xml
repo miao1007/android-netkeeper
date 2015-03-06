@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">畅通无线</string>
+    <string name="app_desc">畅通无线正在运行</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="username">用户名：</string>
+    <string name="password">密 码：</string>
+    <string name="rember_passwd">记住密码</string>
+    <string name="refresh_pic">换张图片</string>
+    <string name="prompt">请沿下图黄色图形画线进行登录</string>
+    <string name="message">认证成功(…, …)</string>
+    <string name="logout">退出登录</string>
+    <string name="logoutTip">退出</string>
+    <string name="add_account">添加</string>
+    <string name="sucess_title">欢迎您使用“畅通无线”客户端，您已在线：</string>
+    <string name="strInputAccHint">请输入帐号</string>
+    <string name="default_account">默认帐号</string>
+    <string name="list_account">帐号列表</string>
+    <string name="str_verify_help">请输入验证码：</string>
+    <string name="str_btn_enter">确 定</string>
+    <string name="str_btn_canel">重 置</string>
+    <string name="verify_s1">剩余</string>
+    <string name="verify_s2">秒，当前登录帐号下线</string>
+    <string name="pwd">密码</string>
+    <string name="setAccountActivity_account_exists_error">您添加的帐号已存在，请重新输入</string>
+</resources>

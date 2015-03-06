@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppBaseTheme" parent="@*android:style/Theme.Light" />
+    <style name="AppTheme" parent="@style/AppBaseTheme" />
+    <style name="layout_full">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">fill_parent</item>
+    </style>
+    <style name="layout_wrap">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="layout_horizontal" parent="@style/layout_full">
+        <item name="android:layout_width">0.0px</item>
+    </style>
+    <style name="layout_vertical" parent="@style/layout_full">
+        <item name="android:layout_height">0.0px</item>
+    </style>
+</resources>

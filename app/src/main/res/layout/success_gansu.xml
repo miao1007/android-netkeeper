@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:background="#ffffffff" android:layout_width="fill_parent" android:layout_height="fill_parent" android:layout_alignParentBottom="true"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/imageView1" android:background="@drawable/titlelogo" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+    <ImageView android:id="@id/imageView2" android:background="@drawable/loginoktop" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+    <WebView android:id="@id/success_web" android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="0.5" />
+    <TextView android:textSize="25.0sp" android:textStyle="bold" android:textColor="#ffff0033" android:gravity="center" android:id="@id/login_time" android:background="@drawable/time" android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="0.1" />
+    <RelativeLayout android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="0.13">
+        <ImageView android:autoLink="all" android:id="@id/exit" android:layout_width="125.0dip" android:layout_height="wrap_content" android:layout_marginLeft="25.0dip" android:layout_marginTop="30.0dip" android:layout_marginBottom="15.0dip" android:layout_alignParentLeft="true" android:layout_centerVertical="true" />
+        <ImageView android:autoLink="all" android:id="@id/logout" android:layout_width="125.0dip" android:layout_height="wrap_content" android:layout_marginTop="30.0dip" android:layout_marginRight="25.0dip" android:layout_marginBottom="15.0dip" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+    </RelativeLayout>
+</LinearLayout>

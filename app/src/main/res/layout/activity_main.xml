@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="top|center" android:orientation="horizontal" android:background="@drawable/starting" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:id="@id/LinearLayout01" android:background="#ffffffff" android:layout_width="fill_parent" android:layout_height="fill_parent">
+        <ImageView android:id="@id/imageView1" android:background="@drawable/titlelogo" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_weight="0.0" />
+        <RelativeLayout android:id="@id/RelativeLayout02" android:background="@drawable/userbk" android:paddingTop="21.0px" android:paddingBottom="21.0px" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <EditText android:id="@id/username" android:background="@drawable/qq_edit_login" android:paddingLeft="15.0sp" android:focusable="false" android:saveEnabled="true" android:layout_width="284.0dip" android:layout_height="50.0dip" android:layout_toRightOf="@id/TextView01" android:layout_alignRight="@id/moreSelect" />
+            <ImageView android:autoLink="all" android:id="@id/account_setting" android:layout_width="wrap_content" android:layout_height="40.0dip" android:layout_margin="10.0dip" android:layout_toRightOf="@id/username" android:layout_alignTop="@id/username" android:layout_alignBottom="@id/username" android:layout_alignParentRight="true" />
+            <TextView android:textSize="16.0dip" android:textColor="#ff3f3f3f" android:gravity="center_vertical" android:id="@id/TextView01" android:paddingLeft="7.0sp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/username" android:layout_alignBaseline="@id/username" android:layout_alignBottom="@id/username" android:layout_alignParentLeft="true" />
+            <ImageButton android:id="@id/moreSelect" android:background="@drawable/more_select" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="86.0dip" android:layout_alignTop="@id/username" android:layout_alignBottom="@id/TextView01" android:layout_alignParentRight="true" />
+        </RelativeLayout>
+        <TextView android:textSize="6.0pt" android:layout_gravity="center_horizontal" android:id="@id/textView1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12.0dip" android:text="@string/prompt" />
+        <LinearLayout android:orientation="horizontal" android:id="@id/auth_pic_layout" android:paddingLeft="0.0dip" android:paddingTop="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginTop="5.0dip" android:layout_marginRight="20.0dip" android:layout_marginBottom="10.0dip" android:layout_weight="0.02" />
+        <ImageView android:autoLink="all" android:layout_gravity="center_horizontal" android:id="@id/refresh_pic" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="40.0dip" android:layout_marginTop="10.0dip" android:layout_marginRight="40.0dip" android:layout_marginBottom="30.0dip" />
+    </LinearLayout>
+</LinearLayout>

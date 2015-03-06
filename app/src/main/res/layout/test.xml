@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TableRow>
+        <TextView android:textStyle="bold" android:gravity="center" android:id="@id/lable1" android:layout_width="55.0dip" android:text="用户名" />
+        <EditText android:id="@id/entry1" android:background="@drawable/input_bg" android:layout_width="250.0dip" android:layout_height="wrap_content" />
+    </TableRow>
+    <TableRow>
+        <TextView android:textStyle="bold" android:gravity="center" android:id="@id/lable2" android:layout_width="55.0dip" android:text="密码" />
+        <EditText android:id="@id/entry2" android:background="@drawable/input_bg" android:layout_width="250.0dip" android:layout_height="wrap_content" android:scrollHorizontally="true" android:password="true" />
+    </TableRow>
+</TableLayout>

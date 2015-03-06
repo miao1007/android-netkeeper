@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="blue">#ffa0daff</color>
+    <color name="gray">#ff090e19</color>
+    <color name="black">#ff1b1b1b</color>
+    <color name="green">#ff36ff00</color>
+    <color name="purple">#ff702c5f</color>
+    <color name="deep">#ff09091a</color>
+    <color name="tint">#ff080808</color>
+    <color name="white">#ffffffff</color>
+    <color name="red">#ffe60131</color>
+    <color name="deepblue">#ff094779</color>
+    <color name="group_item_deep">#ff595959</color>
+    <color name="salf_transparent">#e0000000</color>
+    <color name="mediaplay_bg">#ff000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="lightbulue">#ffd6e8f8</color>
+</resources>

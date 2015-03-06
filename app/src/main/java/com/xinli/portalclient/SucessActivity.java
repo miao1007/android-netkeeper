@@ -776,18 +776,7 @@ public class SucessActivity extends BaseActivity {
   }
 
   public void exitApp() {
-    this.logger.debug("exitApp========step11===");
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle("\u63d0\u793a");
-    builder.setMessage(
-        "\u60a8\u786e\u5b9a\u9000\u51fa\u7a0b\u5e8f\u5e76\u8fd4\u56de\u767b\u5f55\u9875\u9762\u5417?");
-    builder.setPositiveButton(R.string.logoutTip, new OnClickListener() {
-      public void onClick(DialogInterface dialog, int which) {
-        SucessActivity.this.backMain();
-      }
-    });
-    builder.setNegativeButton("\u53d6\u6d88", null);
-    builder.show();
+    Log.d(TAG,"exitApp");
   }
 
   public String getRealUrl() {

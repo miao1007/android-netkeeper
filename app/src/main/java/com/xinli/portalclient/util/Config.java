@@ -12,11 +12,11 @@ public class Config {
   public static String firstRreqUrl;
   //this is  Http redirect home page
   //http://gxprotal.online.cq.cn:8080/
-  public static String realUrl;
+  public static String realUrl = "http://gxprotal.online.cq.cn:8080/";
 
   static {
     REDIRECTINFO = "redirectInfo";
-    firstRreqUrl = "http://www.189.cn";
+    firstRreqUrl = "http://gxprotal.online.cq.cn:8080/";
     VERIFYCODE_AUTH_URL = "117.34.65.39";
     VERIFYCODE_AUTH_SORT = 8099;
     VERIFYCODE_SWITCH = "OFF";

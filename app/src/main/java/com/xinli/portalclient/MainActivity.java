@@ -307,15 +307,16 @@ public class MainActivity extends BaseActivity {
       }
 
       public void onClick(View v) {
-        
+
         Log.d("点击下拉框", this.val$position + "");
+        //mock password
         usernametext = "123_MyAdapter";
         password = "passwd_MyAdapter";
         username.setText(usernametext);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString(usernametext,password);
         editor.apply();
-        
+
         Log.d("username=", MainActivity.this.usernametext);
         popView.dismiss();
       }
@@ -364,8 +365,9 @@ public class MainActivity extends BaseActivity {
 
   public MainActivity() {
     this.handler = new Handler() {
+      @Override
       public void handleMessage(Message msg) {
-        Log.d(TAG, "msg.what = " + msg.what);
+        Log.d(TAG, "handler:msg.what = " + msg.what);
         switch (msg.what) {
           case UPDATA_CLIENT:
             MainActivity.this.list1 = msg.getData().getParcelableArrayList("list1");
@@ -404,7 +406,7 @@ public class MainActivity extends BaseActivity {
     this.authHandler = new Handler() {
       public void handleMessage(Message msg) {
         String resultText = msg.getData().getString("resultDesc");
-        Log.d(TAG, "msg.what = " + msg.what);
+        Log.d(TAG, "authHandler:msg.what = " + msg.what);
         switch (msg.what) {
           case UPDATA_CLIENT:
             MainActivity.this.logger.debug("authHandler ==step1 ==========");
@@ -792,7 +794,8 @@ public class MainActivity extends BaseActivity {
         }
       }
     });
-    this.logger.debug("onCreate ==initLoginUserName=step7=====");
+
+    Log.d(TAG,"onCreate ==initLoginUserName=step7=====");
     if (!CheckNetworkState()) {
       this.logger.debug("onCreate ==CheckNetworkState=false=====");
       exceptionView();
@@ -800,7 +803,7 @@ public class MainActivity extends BaseActivity {
     } else if (isPrivateIpAdress()) {
       exceptionView();
       Toast.makeText(getApplicationContext(),
-          "\u7f51\u7edc\u5f02\u5e38\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\uff01", UPDATA_CLIENT)
+          "网络异常，请检查网络！", UPDATA_CLIENT)
           .show();
     } else {
       //start http 
@@ -1061,6 +1064,8 @@ public class MainActivity extends BaseActivity {
       result = true;
     }
     this.logger.debug(new StringBuilder("result ============").append(result).toString());
-    return result;
+    //mock 
+    //return result;
+    return false;
   }
 }

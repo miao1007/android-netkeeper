@@ -40,7 +40,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.code.microlog4android.Level;
 import com.google.code.microlog4android.format.command.CategoryFormatCommand;
 import com.xinli.portalclient.model.RequestModel;
 import com.xinli.portalclient.service.OnlineHeartService;
@@ -311,6 +310,7 @@ public class SucessActivity extends BaseActivity {
     static {
         loginTime = 0;
         COUNT_DOWN_LIMIT = 45;
+        //这部份的waring，直接重构的时候解决，不然弄成static和弱引用的话可能参数出现空指针
         mHandler = new Handler() {
             public void handleMessage(Message msg) {
                 switch (msg.what) {
@@ -361,6 +361,7 @@ public class SucessActivity extends BaseActivity {
         };
         this.mTimerCountDown = null;
         this.mTimerCountDownTask = null;
+        //这部份的waring，直接重构的时候解决，不然弄成static和弱引用的话可能参数出现空指针
         this.handler = new Handler() {
             public void handleMessage(Message msg) {
                 switch (msg.what) {

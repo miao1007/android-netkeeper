@@ -15,6 +15,10 @@ public class RequestModel {
         this.sessionId = sessionId;
     }
 
+  public RequestModel() {
+
+  }
+
     public boolean isForceUpdated() {
         return this.forceUpdated;
     }

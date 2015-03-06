@@ -307,10 +307,15 @@ public class MainActivity extends BaseActivity {
       }
 
       public void onClick(View v) {
+        
         Log.d("点击下拉框", this.val$position + "");
         usernametext = "123_MyAdapter";
         password = "passwd_MyAdapter";
         username.setText(usernametext);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString(usernametext,password);
+        editor.commit();
+        
         Log.d("username=", MainActivity.this.usernametext);
         popView.dismiss();
       }
@@ -759,53 +764,32 @@ public class MainActivity extends BaseActivity {
     this.logger.debug("onCreate ==initLoginUserName=step6=====");
     refreshText.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        if (MainActivity.this.CheckNetworkState()) {
-          try {
-            if (isPrivateIpAdress()) {
-              Log.e(TAG, "isPrivateIpAdress");
-              return;
-            }
 
-            if (imageView == null) {
-              Log.e(TAG, "imageView == null");
-              Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key……");
-              MainActivity.this.reqResource = MainActivity.this.setAuthPicAndKey();
-              Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key成功……");
-              return;
-            } else {
-              Log.d(TAG, "onCreate==准备刷新手势……");
-              imageView.bitmap =
-                  BitmapUtils.getPicture(reqResource.getSessionId(), screenWidth, screenHeight)
-                      .getBitmap();
-              Log.d(TAG, "onCreate==刷新手势成功……");
-              return;
-            }
-            
-          } catch (Exception e) {
-            Toast.makeText(MainActivity.this.getApplicationContext(),
-                "\u83b7\u53d6\u624b\u52bf\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u6216\u7a0d\u5019\u518d\u8bd5",
-                UPDATA_CLIENT).show();
-            if (MainActivity.this.imageView != null) {
-              MainActivity.this.logger.error(new StringBuilder(
-                  "onCreate==\u5237\u65b0\u624b\u52bf\u5931\u8d25\uff0c\u53d1\u751f\u5f02\u5e38\u2026\u2026")
-                  .append(e.getMessage())
-                  .toString());
-              MainActivity.this.exceptionView();
-              MainActivity.this.imageView = null;
-            } else {
-              MainActivity.this.logger.error(new StringBuilder(
-                  "onCreate==\u70b9\u51fb\u6362\u5f20\u56fe\u7247\uff1a\u91cd\u65b0\u8bf7\u6c42\u5237\u65b0\u624b\u52bf\u548ckey\u53d1\u751f\u5f02\u5e38\u2026\u2026")
-                  .append(e.getMessage())
-                  .toString());
-              MainActivity.this.reqResource = MainActivity.this.setAuthPicAndKey();
-            }
-            MainActivity.this.logger.error(new StringBuilder(
-                "\u5237\u65b0\u8bf7\u6c42\u624b\u52bf\u8d44\u6e90\u53d1\u751f\u5f02\u5e38").append(
-                e.getMessage()).toString());
-          }
+        if (!CheckNetworkState()) {
+          shoWifiUnavaialableDialog();
+          return;
         }
-        MainActivity.this.logger.debug("onCreate ==CheckNetworkState===false==");
-        MainActivity.this.shoWifiUnavaialableDialog();
+
+        if (isPrivateIpAdress()) {
+          Log.e(TAG, "isPrivateIpAdress");
+          return;
+        }
+
+        if (imageView == null) {
+          Log.e(TAG, "imageView == null");
+          Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key……");
+          MainActivity.this.reqResource = MainActivity.this.setAuthPicAndKey();
+          Log.d(TAG, "onCreate==点击换张图片：重新请求刷新手势和key成功……");
+          return;
+        } else {
+          Log.e(TAG, "imageView != null");
+          Log.d(TAG, "onCreate==准备刷新手势……");
+          imageView.bitmap =
+              BitmapUtils.getPicture(reqResource.getSessionId(), screenWidth, screenHeight)
+                  .getBitmap();
+          Log.d(TAG, "onCreate==刷新手势成功……");
+          return;
+        }
       }
     });
     this.logger.debug("onCreate ==initLoginUserName=step7=====");

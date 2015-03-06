@@ -18,6 +18,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 public class BitmapUtils {
+  public static final String TAG = BitmapUtils.class.getSimpleName();
   public static final int REQUEST_TIMEOUT = 5000;
   public static final int SO_TIMEOUT = 10000;
   protected static final Logger logger;
@@ -31,7 +32,7 @@ public class BitmapUtils {
     HttpURLConnection httpURLConnection = null;
     boolean isredirect = true;
     try {
-      Log.i("init redirect url", requestUrl);
+      Log.i(TAG, "init redirect url:" + requestUrl);
       URL myFileUrl = new URL(requestUrl);
       try {
         httpURLConnection = (HttpURLConnection) myFileUrl.openConnection();
@@ -41,19 +42,12 @@ public class BitmapUtils {
         httpURLConnection.connect();
         inputStream = httpURLConnection.getInputStream();
         String realUrl = httpURLConnection.getURL().toString().split("\\?")[0];
-        System.out.println(new StringBuilder("realUrl====").append(realUrl).toString());
         if (requestUrl.equalsIgnoreCase(realUrl)) {
           isredirect = false;
-          logger.info(new StringBuilder("URL no redirect  :").append(requestUrl)
-              .append("----->")
-              .append(realUrl)
-              .toString());
+          Log.v(TAG, "URL no redirected  :" + requestUrl);
         } else {
           Config.realUrl = realUrl;
-          logger.info(new StringBuilder("URL Redirect  is :").append(requestUrl)
-              .append("----->")
-              .append(realUrl)
-              .toString());
+          Log.v(TAG, "URL redirected  :" + realUrl);
         }
         if (httpURLConnection != null) {
           httpURLConnection.disconnect();
@@ -117,7 +111,7 @@ public class BitmapUtils {
     }
   }
 
-  //download bitmap from http://www.189.cn
+  //download bitmap from realUrl
   public static RequestModel getPicture(String sessionId, int screenWidth, int screenHeight)
       throws RuntimeException {
     Throwable th;
@@ -125,17 +119,16 @@ public class BitmapUtils {
     InputStream in = null;
     try {
       if (Config.realUrl == null) {
-        //http://www.189.cn
         initRealAddress(Config.firstRreqUrl);
       }
-      Log.w("url", Config.realUrl + "/wf.do?code=2");
+      Log.d(TAG, "url: " + Config.realUrl + "/wf.do?code=2");
       URL myFileUrl = new URL(
           new StringBuilder(String.valueOf(Config.realUrl)).append("/wf.do?code=2&screen=")
               .append(URLEncoder.encode(new StringBuilder(String.valueOf(screenWidth)).append("*")
                   .append(screenHeight)
                   .toString(), "UTF-8"))
               .toString());
-
+      Log.d(TAG, "bitmap: " + myFileUrl.toString());
       try {
         HttpURLConnection conn = (HttpURLConnection) myFileUrl.openConnection();
         conn.setConnectTimeout(REQUEST_TIMEOUT);
@@ -146,20 +139,15 @@ public class BitmapUtils {
         in = conn.getInputStream();
         // save bitmap to requestResult , will use too much memory?
         requestResult.setBitmap(BitmapFactory.decodeStream(in));
-        return requestResult;
       } catch (IOException e) {
 
-        Log.e("\u8bf7\u6c42\u56fe\u7247\u5f02\u5e38", e.getMessage());
-        throw new RuntimeException(
-            new StringBuilder("\u8bf7\u6c42\u56fe\u7247\u5f02\u5e38\uff1a").append(e.getMessage())
-                .toString());
+        Log.e(TAG, "getPicture exception" + e.getMessage());
       } finally {
         closeStream(in, null);
+        return requestResult;
       }
     } catch (IOException e2) {
-      throw new RuntimeException(
-          new StringBuilder("\u8bf7\u6c42\u56fe\u7247\u5f02\u5e38\uff1a").append(e2.getMessage())
-              .toString());
+      return null;
     }
   }
 

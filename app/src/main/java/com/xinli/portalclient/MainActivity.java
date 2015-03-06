@@ -314,7 +314,7 @@ public class MainActivity extends BaseActivity {
         username.setText(usernametext);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString(usernametext,password);
-        editor.commit();
+        editor.apply();
         
         Log.d("username=", MainActivity.this.usernametext);
         popView.dismiss();
@@ -332,7 +332,7 @@ public class MainActivity extends BaseActivity {
     }
 
     public Object getItem(int position) {
-      return Integer.valueOf(position);
+      return position;
     }
 
     public long getItemId(int position) {

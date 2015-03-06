@@ -16,6 +16,8 @@ import java.util.Date;
 import org.apache.http.message.BasicNameValuePair;
 
 public class OnlineHeartService extends Service {
+
+  public static final String TAG = "OnlineHeartService";
   private static String clientVersion;
   private static final Logger logger = LoggerFactory.getLogger(OnlineHeartService.class);
   private static String phoneIp;
@@ -28,7 +30,7 @@ public class OnlineHeartService extends Service {
       super.handleMessage(paramAnonymousMessage);
     }
   };
-  
+
   private Handler proxyHandler = new Handler();
   private Runnable proxyRunnable = new Runnable() {
     public void run() {
@@ -52,44 +54,38 @@ public class OnlineHeartService extends Service {
   public OnlineHeartService() {
   }
 
+  
   private void sendOnlineHeart() {
     ArrayList localArrayList = new ArrayList();
     localArrayList.add(new BasicNameValuePair("username", username));
     try {
-      logger.debug(
-          "开始发送在线心跳报文:" + url + "/wf.do?code=7  sessionId:" + sessionId + "time:" + new Date());
+      Log.d(TAG,
+          "sendOnlineHeart:" + url + "/wf.do?code=7  ,sessionId:" + sessionId + ",time:" + new Date());
       String str =
           HttpUtils.sendContentByHttpClient(url + "/wf.do?code=7", sessionId, localArrayList);
-      logger.info("发送在线心跳报文结果：" + str);
+      logger.info("sendOnlineHeart done:" + str);
       return;
     } catch (Exception localException) {
       onlineHeartBroadcast();
-      logger.error("发送在线心跳报文发生异常" + localException);
-      logger.error("发送在线心跳报文发生异常message" + localException.getMessage());
+      Log.d(TAG,"sendOnlineHeart error!" + localException.getMessage());
       sendHeart = false;
     }
   }
 
   private void sendProxyHeart() {
     try {
-      logger.debug(
-          "开始发送防代理心跳报文: ip:" + phoneIp + ",version:" + clientVersion + "username:" + username);
+      Log.d(TAG,
+          "sendProxyHeart: ip:" + phoneIp + ",version:" + clientVersion + "username:" + username);
       new Sim_NetKeeperClient().sendHeart(username, phoneIp, "android" + clientVersion);
-      logger.info("发送防代理心跳报文成功");
+      Log.d(TAG,"sendProxyHeart success!");
       return;
     } catch (Exception localException) {
-      logger.error("发送防代理心跳发生异常" + localException.getMessage());
+      Log.d(TAG,"sendProxyHeart exception!" + localException.getMessage());
       localException.printStackTrace();
     }
   }
 
-  public int getResult() {
-    if (sendHeart) {
-      return 0;
-    }
-    return 1;
-  }
-
+  @Override
   public IBinder onBind(Intent paramIntent) {
     Log.i("OnlineHeartService", "onBind");
     url = paramIntent.getStringExtra("url");
@@ -100,22 +96,26 @@ public class OnlineHeartService extends Service {
     return binder;
   }
 
+  @Override
   public void onCreate() {
     super.onCreate();
     Log.i("OnlineHeartService", "onCreate");
     handler.post(runable);
   }
 
+  @Override
   public void onDestroy() {
     super.onDestroy();
     Log.i("OnlineHeartService", "onDestroy");
   }
 
+  @Override
   public void onRebind(Intent paramIntent) {
     super.onRebind(paramIntent);
     Log.i("OnlineHeartService", "onRebind");
   }
 
+  @Override
   public boolean onUnbind(Intent paramIntent) {
     Log.i("OnlineHeartService", "onUnbind");
     handler.removeCallbacks(runable);

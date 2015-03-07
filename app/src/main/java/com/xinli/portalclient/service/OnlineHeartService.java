@@ -62,7 +62,7 @@ public class OnlineHeartService extends Service {
       Log.d(TAG,
           "sendOnlineHeart:" + url + "/wf.do?code=7  ,sessionId:" + sessionId + ",time:" + new Date());
       String str =
-          HttpUtils.sendContentByHttpClient(url + "/wf.do?code=7", sessionId, localArrayList);
+          HttpUtils.sendContentByHttpPost(url + "/wf.do?code=7", sessionId, localArrayList);
       logger.info("sendOnlineHeart done:" + str);
       return;
     } catch (Exception localException) {

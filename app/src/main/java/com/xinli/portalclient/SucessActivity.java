@@ -47,7 +47,7 @@ import com.xinli.portalclient.service.OnlineHeartService.LocalBinder;
 import com.xinli.portalclient.util.Config;
 import com.xinli.portalclient.util.HttpUtils;
 import com.xinli.portalclient.util.MD5Builder;
-import com.xinli.portalclient.util.ShareUtil;
+import com.xinli.portalclient.util.PrefUtils;
 import com.xinli.portalclient.util.SocketClientUDP;
 
 import java.text.SimpleDateFormat;
@@ -100,7 +100,7 @@ public class SucessActivity extends BaseActivity {
     private String resultXML;
     private SimpleDateFormat sdf;
     OnlineHeartService service;
-    private ShareUtil shareUtil;
+    private PrefUtils prefUtils;
     private SharedPreferences sharedCheckState;
     private String[] strResultInfo;
     private boolean timeoutFlag;
@@ -129,8 +129,8 @@ public class SucessActivity extends BaseActivity {
             SucessActivity.this.logger.debug("call GetVerifyThread===");
             try {
                 String resultXML;
-                SucessActivity.this.shareUtil = new ShareUtil(SucessActivity.this);
-                SucessActivity.this.verifyURL = SucessActivity.this.shareUtil.getVerifyURL();
+                SucessActivity.this.prefUtils = new PrefUtils(SucessActivity.this);
+                SucessActivity.this.verifyURL = SucessActivity.this.prefUtils.getVerifyURL();
                 SucessActivity.this.logger.debug(
                         new StringBuilder("call GetVerifyThread==step1=verifyURL==").append(
                                 SucessActivity.this.verifyURL).toString());

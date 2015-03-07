@@ -12,7 +12,7 @@ import com.google.code.microlog4android.config.PropertyConfigurator;
 import java.util.ArrayList;
 
 public class BaseActivity extends Activity {
-  public static final String TAG = "BaseActivity";
+  public static final String TAG = BaseActivity.class.getSimpleName();
   protected static ArrayList<Activity> activityList;
   protected final transient Logger logger;
   WifiManager wifiManager;
@@ -31,7 +31,7 @@ public class BaseActivity extends Activity {
     this.wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
     PropertyConfigurator.getConfigurator(this).configure();
     activityList.add(this);
-    Log.i(TAG, activityList.toString());
+    Log.i(TAG,"activityList count = " + activityList.size() );
   }
 
   @Override
@@ -53,7 +53,6 @@ public class BaseActivity extends Activity {
     try {
       PackageManager packageManager = getPackageManager();
       PackageInfo packInfo = packageManager.getPackageInfo(getPackageName(), 0);
-      Log.d(TAG, "getVersionName" + packInfo.toString());
       return packInfo.versionName;
     } catch (Exception e) {
       e.printStackTrace();
@@ -64,7 +63,7 @@ public class BaseActivity extends Activity {
   public int getLocalIpAddress() {
 
     int ipAddress = this.wifiManager.getConnectionInfo().getIpAddress();
-    Log.d(TAG, "getLocalIpAddress" + intToIp(ipAddress));
+    Log.d(TAG, "getLocalIpAddress " + intToIp(ipAddress));
     return ipAddress;
   }
 

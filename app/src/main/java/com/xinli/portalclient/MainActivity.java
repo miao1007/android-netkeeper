@@ -26,7 +26,6 @@ import android.os.Message;
 import android.os.Process;
 import android.os.StrictMode;
 import android.os.StrictMode.ThreadPolicy;
-import android.text.format.Formatter;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Xml;
@@ -54,7 +53,7 @@ import com.xinli.portalclient.util.BitmapUtils;
 import com.xinli.portalclient.util.Config;
 import com.xinli.portalclient.util.HttpUtils;
 import com.xinli.portalclient.util.MessageContext;
-import com.xinli.portalclient.util.ShareUtil;
+import com.xinli.portalclient.util.PrefUtils;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,6 +64,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -88,7 +88,7 @@ public class MainActivity extends BaseActivity {
   private MyAdapter dropDownAdapter;
   ImageView errView;
   LinearLayout gestureLayout;
-  Handler handler;
+  static Handler handler;
   Handler handlerUpdate;
   private MySurfaceView imageView;
   private UpdataInfo info;
@@ -132,20 +132,16 @@ public class MainActivity extends BaseActivity {
 
     public void run() {
       try {
-        MainActivity.this.logger.debug(
-            new StringBuilder("\u4e0b\u8f7dapkurl===============").append(
-                MainActivity.this.info.getUrl()).toString());
-        File file = MainActivity.getFileFromServer(MainActivity.this.info.getUrl(), this.val$pd);
+
+        File file = MainActivity.getFileFromServer(info.getUrl(), this.val$pd);
         sleep(3000);
-        MainActivity.this.installApk(file);
+        installApk(file);
         this.val$pd.dismiss();
       } catch (Exception e) {
-        MainActivity.this.logger.error(
-            new StringBuilder("\u4e0b\u8f7dapk\u51fa\u73b0\u5f02\u5e38===============").append(
-                e.getMessage()).toString());
+
         Message msg = new Message();
         msg.what = 2;
-        MainActivity.this.handlerUpdate.sendMessage(msg);
+        handlerUpdate.sendMessage(msg);
         e.printStackTrace();
         this.val$pd.cancel();
       }
@@ -161,17 +157,10 @@ public class MainActivity extends BaseActivity {
     }
 
     public void onClick(DialogInterface dialog, int whichButton) {
-      MainActivity.this.mPassword = this.val$edtInput.getText().toString().trim();
-      MainActivity.this.logger.debug(new StringBuilder("==mSsid==").append(MainActivity.this.mSsid)
-          .append("==mPassword==")
-          .append(MainActivity.this.mPassword)
-          .append("==dhcpinfo.ipAddress==")
-          .append(Formatter.formatIpAddress(MainActivity.this.mWifiManager.getDhcpInfo().ipAddress))
-          .toString());
-      MainActivity.this.mWifiManager.disableNetwork(MainActivity.this.mWifiInfo.getNetworkId());
-      MainActivity.this.mWifiManager.disconnect();
-      MainActivity.this.logger.debug("showDialog==disconnect=");
-      MainActivity.this.handler.sendEmptyMessage(DOWN_ERROR);
+      mPassword = this.val$edtInput.getText().toString().trim();
+      mWifiManager.disableNetwork(mWifiInfo.getNetworkId());
+      mWifiManager.disconnect();
+      handler.sendEmptyMessage(DOWN_ERROR);
       dialog.dismiss();
     }
   }
@@ -208,16 +197,16 @@ public class MainActivity extends BaseActivity {
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(BitmapUtils.REQUEST_TIMEOUT);
-        MainActivity.this.info = MainActivity.getUpdataInfo(conn.getInputStream());
+        info = MainActivity.getUpdataInfo(conn.getInputStream());
         //no need to update
-        if (MainActivity.this.info.getVersion().equals(MainActivity.this.getVersionName())) {
+        if (info.getVersion().equals(getVersionName())) {
           Log.d(TAG, "版本号相同无需升级");
           return;
         }
       } catch (Exception e) {
         msg = new Message();
         msg.what = 1;
-        MainActivity.this.handlerUpdate.sendMessage(msg);
+        handlerUpdate.sendMessage(msg);
         e.printStackTrace();
       }
     }
@@ -225,74 +214,77 @@ public class MainActivity extends BaseActivity {
 
   class LoginThread implements Runnable {
 
-    LoginThread() {
+    //private int picWidth;
+    //private int picHeight;
+    //private String keyvalue;
+    //private List list1;
+    //private List list2;
+    //private String usernametext;
+    //private String password;
+    //private String ipaddr;
 
+    private String endpoint;
+    private String session;
+    List<NameValuePair> postparas;
+
+    LoginThread(String endpoint, String session, List<NameValuePair> postparas) {
+      this.endpoint = endpoint;
+      this.session = session;
+      this.postparas = postparas;
     }
 
+    @Override
     public void run() {
-      if (MainActivity.this.usernametext.isEmpty() || MainActivity.this.password.isEmpty()) {
-        MainActivity.this.logger.error(
-            "\u767b\u5f55\u53d1\u751f\u5f02\u5e38,\u5e10\u53f7\u6216\u5bc6\u7801\u4e3a\u7a7a");
+      Log.d(TAG, "LoginThread run");
+      if (usernametext.isEmpty() || password.isEmpty()) {
+        Log.e(TAG, "passwd or username is empty");
         return;
       }
-      Message msg = MainActivity.this.handler.obtainMessage();
+      Message msg = handler.obtainMessage();
       Bundle bundle = new Bundle();
-      try {
 
-        String result = HttpUtils.sendContentByHttpClient(
-            //host address
-            new StringBuilder(String.valueOf(Config.realUrl)).append("/wf.do?code=8").toString(),
-            //sessionId
-            MainActivity.this.sessionId,
-            //List<String> paras
-            MessageContext.paramStrReturn(MainActivity.this.picWidth, MainActivity.this.picHeight,
-                MainActivity.this.list1, MainActivity.this.list2, MainActivity.this.keyvalue,
-                MainActivity.this.usernametext, MainActivity.this.password,
-                MainActivity.this.intToIp(MainActivity.this.getLocalIpAddress())));
-        MainActivity.this.resultArray = result.split("#");
-        MainActivity.this.list1.clear();
-        MainActivity.this.list2.clear();
-        MainActivity.this.logger.info(
-            new StringBuilder("LoginThread\u767b\u5f55\u7ed3\u679c===========").append(
-                MainActivity.this.resultArray[0]).toString());
-        if (ReturnMessage.AUTH_TRUE.equals(MainActivity.this.resultArray[0])) {
-          msg.what = 0;
-          ShareUtil shareUtil = new ShareUtil(MainActivity.this);
-          if (MainActivity.this.resultArray.length < 6) {
-            shareUtil.setVerifyURL("");
-          } else if (MainActivity.this.resultArray[5].split("=").length > 1) {
-            shareUtil.setVerifyURL(MainActivity.this.resultArray[5].split("=")[1]);
-          }
-          MainActivity.this.logger.info(
-              new StringBuilder("LoginThread=======verifyURL==").append(shareUtil.getVerifyURL())
-                  .toString());
-          msg.setData(bundle);
-          MainActivity.this.authHandler.sendMessage(msg);
+      String result = HttpUtils.sendContentByHttpPost(
+          //host address
+          endpoint + "/wf.do?code=8",
+          //sessionId
+          sessionId,
+          //List<String> paras
+          postparas);
+
+      resultArray = result.split("#");
+      list1.clear();
+      list2.clear();
+      Log.v(TAG, "result = " + resultArray[0].toString());
+      if (ReturnMessage.AUTH_TRUE.equals(resultArray[0])) {
+        msg.what = 0;
+        PrefUtils prefUtils = new PrefUtils(MainActivity.this);
+        if (resultArray.length < 6) {
+          prefUtils.setVerifyURL("");
+        } else if (resultArray[5].split("=").length > 1) {
+          prefUtils.setVerifyURL(resultArray[5].split("=")[1]);
         }
-        if (ReturnMessage.AUTH_FALSE.equals(MainActivity.this.resultArray[0])) {
-          msg.what = 1;
-          bundle.putString("resultDesc", MainActivity.this.resultArray[1]);
-        } else if (ReturnMessage.KEY_FALSE.equals(MainActivity.this.resultArray[0])) {
-          msg.what = 2;
-          bundle.putString("resultDesc",
-              "\u624b\u52bf\u5df2\u8fc7\u671f\uff0c\u8bf7\u91cd\u65b0\u64cd\u4f5c");
-        } else if (ReturnMessage.PIC_FALSE.equals(MainActivity.this.resultArray[0])) {
-          bundle.putString("resultDesc", "\u624b\u52bf\u9a8c\u8bc1\u5931\u8d25");
-          msg.what = 3;
-        } else {
-          bundle.putString("resultDesc", "\u8ba4\u8bc1\u7ed3\u679c\u7801\u5f02\u5e38");
-          msg.what = 100;
-        }
+        Log.i(TAG,
+            new StringBuilder("LoginThread=======verifyURL==").append(prefUtils.getVerifyURL())
+                .toString());
         msg.setData(bundle);
-        MainActivity.this.authHandler.sendMessage(msg);
-      } catch (Exception e) {
-        MainActivity.this.logger.error(
-            new StringBuilder(String.valueOf(MainActivity.this.usernametext)).append(
-                "\u767b\u5f55\u53d1\u751f\u5f02\u5e38").append(e.getMessage()).toString());
-        msg.what = 4;
-        bundle.putString("resultDesc",
-            "\u8fde\u63a5\u51fa\u73b0\u95ee\u9898\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u6216\u7a0d\u540e\u518d\u8bd5");
+        authHandler.sendMessage(msg);
       }
+      if (ReturnMessage.AUTH_FALSE.equals(resultArray[0])) {
+        msg.what = 1;
+        bundle.putString("resultDesc", resultArray[1]);
+      } else if (ReturnMessage.KEY_FALSE.equals(resultArray[0])) {
+        msg.what = 2;
+        bundle.putString("resultDesc",
+            "\u624b\u52bf\u5df2\u8fc7\u671f\uff0c\u8bf7\u91cd\u65b0\u64cd\u4f5c");
+      } else if (ReturnMessage.PIC_FALSE.equals(resultArray[0])) {
+        bundle.putString("resultDesc", "\u624b\u52bf\u9a8c\u8bc1\u5931\u8d25");
+        msg.what = 3;
+      } else {
+        bundle.putString("resultDesc", "\u8ba4\u8bc1\u7ed3\u679c\u7801\u5f02\u5e38");
+        msg.what = 100;
+      }
+      msg.setData(bundle);
+      authHandler.sendMessage(msg);
     }
   }
 
@@ -314,10 +306,10 @@ public class MainActivity extends BaseActivity {
         password = "passwd_MyAdapter";
         username.setText(usernametext);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString(usernametext,password);
+        editor.putString(usernametext, password);
         editor.apply();
 
-        Log.d("username=", MainActivity.this.usernametext);
+        Log.d("username=", usernametext);
         popView.dismiss();
       }
     }
@@ -369,34 +361,41 @@ public class MainActivity extends BaseActivity {
       public void handleMessage(Message msg) {
         Log.d(TAG, "handler:msg.what = " + msg.what);
         switch (msg.what) {
+          //called when last surfaceview touch left
           case UPDATA_CLIENT:
-            MainActivity.this.list1 = msg.getData().getParcelableArrayList("list1");
-            MainActivity.this.list2 = msg.getData().getParcelableArrayList("list2");
-            MainActivity.this.picWidth = msg.getData().getInt("picwidth");
-            MainActivity.this.picHeight = msg.getData().getInt("picheight");
-            MainActivity.this.mDialog = new ProgressDialog(MainActivity.this);
-            MainActivity.this.mDialog.setTitle("\u767b\u5f55");
-            MainActivity.this.mDialog.setMessage("正在登录服务器，请稍后...");
-            MainActivity.this.mDialog.show();
-            new Thread(new LoginThread()).start();
+            list1 = msg.getData().getParcelableArrayList("list1");
+            list2 = msg.getData().getParcelableArrayList("list2");
+            picWidth = msg.getData().getInt("picwidth");
+            picHeight = msg.getData().getInt("picheight");
+            mDialog = new ProgressDialog(MainActivity.this);
+            mDialog.setTitle("\u767b\u5f55");
+            mDialog.setMessage("正在登录服务器，请稍后...");
+            mDialog.show();
+            List<NameValuePair> postparas =
+                MessageContext.paramStrReturn(picWidth, picHeight, list1, list2, keyvalue,
+                    usernametext, password, intToIp(getLocalIpAddress()));
+
+            new Thread(new LoginThread(Config.realUrl, sessionId, postparas)).start();
+            break;
           case GET_UNDATAINFO_ERROR:
-            MainActivity.this.sendDiscover();
+            sendDiscover();
+            break;
           case DOWN_ERROR:
-            if (MainActivity.this.wifiConnectState()) {
-              MainActivity.this.handler.sendEmptyMessageDelayed(DOWN_ERROR, 1000);
+            if (wifiConnectState()) {
+              handler.sendEmptyMessageDelayed(DOWN_ERROR, 1000);
               return;
             }
-            MainActivity.this.logger.debug("showDialog==CHECK_DISCONNECT=");
-            MainActivity.this.handler.removeMessages(DOWN_ERROR);
-            MainActivity.this.mDialog = new ProgressDialog(MainActivity.this);
-            MainActivity.this.mDialog.setTitle("\u767b\u5f55\u5237\u65b0");
-            MainActivity.this.mDialog.setMessage("正在连接服务器，请稍后...");
-            MainActivity.this.mDialog.show();
-            MainActivity.this.mWifiUtil.connectToTargetWifi(MainActivity.this.mSsid,
-                MainActivity.this.mPassword, MainActivity.this.mConnMethod);
-            MainActivity.this.handler.sendEmptyMessage(GET_UNDATAINFO_ERROR);
+            handler.removeMessages(DOWN_ERROR);
+            mDialog = new ProgressDialog(MainActivity.this);
+            mDialog.setTitle("\u767b\u5f55\u5237\u65b0");
+            mDialog.setMessage("正在连接服务器，请稍后...");
+            mDialog.show();
+            mWifiUtil.connectToTargetWifi(mSsid, mPassword, mConnMethod);
+            handler.sendEmptyMessage(GET_UNDATAINFO_ERROR);
+            break;
           case INIT_RESET_WIFI:
-            MainActivity.this.showDialog();
+            showDialog();
+            break;
           default:
             break;
         }
@@ -409,111 +408,89 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "authHandler:msg.what = " + msg.what);
         switch (msg.what) {
           case UPDATA_CLIENT:
-            MainActivity.this.logger.debug("authHandler ==step1 ==========");
-            MainActivity.this.mDialog.cancel();
-            SucessActivity.userInfo =
-                new RequestModel(MainActivity.this.usernametext, MainActivity.this.sessionId);
-            Editor editor = MainActivity.this.loginFile.edit();
-            editor.putString(Config.USERNAME, MainActivity.this.usernametext);
-            editor.putString(Config.SESSIONID, MainActivity.this.sessionId);
+            mDialog.cancel();
+            SucessActivity.userInfo = new RequestModel(usernametext, sessionId);
+            Editor editor = loginFile.edit();
+            editor.putString(Config.USERNAME, usernametext);
+            editor.putString(Config.SESSIONID, sessionId);
             if (!(Config.realUrl == null
                 || Config.realUrl.isEmpty()
                 || Config.firstRreqUrl.equalsIgnoreCase(Config.realUrl))) {
-              MainActivity.this.logger.debug("authHandler ==Config.realUrl ==========");
+
               editor.putString(Config.REDIRECTINFO, Config.realUrl);
               editor.commit();
             }
-            MainActivity.this.logger.debug(new StringBuilder(
-                "authHandler ==step2 =======SucessActivity===usernametext==").append(
-                MainActivity.this.usernametext)
-                .append("==sessionId==")
-                .append(MainActivity.this.sessionId)
-                .toString());
+
             //start SucessActivity
             //Intent intent =
-            //    new Intent(MainActivity.this.getApplicationContext(), SucessActivity.class);
+            //    new Intent(getApplicationContext(), SucessActivity.class);
             //intent.putExtra("loginTime", System.currentTimeMillis());
             //intent.putExtra("authFlag", true);
-            //MainActivity.this.startActivity(intent);
+            //startActivity(intent);
             break;
 
           case GET_UNDATAINFO_ERROR:
-            MainActivity.this.mDialog.cancel();
-            Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
-                .show();
+            mDialog.cancel();
+            Toast.makeText(getApplicationContext(), resultText, UPDATA_CLIENT).show();
             break;
 
           //error == 2
           case DOWN_ERROR:
             Log.d(TAG, "挑战码过期,重新获取图片和key");
             try {
-              if (MainActivity.this.isPrivateIpAdress()) {
+              if (isPrivateIpAdress()) {
                 Log.e(TAG, "isPrivateIpAdress");
                 return;
               }
-              MainActivity.this.logger.debug("\u4e0d\u662f\u79c1\u7f51\u5730\u5740\u2026\u2026");
-              RequestModel reset = BitmapUtils.getKey(MainActivity.this.getVersionName(),
-                  MainActivity.this.intToIp(MainActivity.this.getLocalIpAddress()));
-              MainActivity.this.logger.info(
-                  new StringBuilder("result===========").append(reset.getMessage()).toString());
+              RequestModel reset =
+                  BitmapUtils.getKey(getVersionName(), intToIp(getLocalIpAddress()));
               if (ReturnMessage.NATCHECK.equals(reset.getMessage())) {
-                MainActivity.this.mDialog.cancel();
-                Toast.makeText(MainActivity.this.getApplicationContext(),
+                mDialog.cancel();
+                Toast.makeText(getApplicationContext(),
                     "\u7f51\u7edc\u5f02\u5e38\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\uff01",
                     UPDATA_CLIENT).show();
-                MainActivity.this.exceptionView();
+                exceptionView();
               } else if (ReturnMessage.VERSIONCHECK.equals(reset.getMessage())) {
-                MainActivity.this.logger.info("\u7248\u672c\u4e0d\u662f\u6700\u65b0\u7684========");
-                Toast.makeText(MainActivity.this.getApplicationContext(),
+                Toast.makeText(getApplicationContext(),
                     "\u60a8\u7684\u7248\u672c\u8fc7\u4f4e\uff0c\u8bf7\u6309\u63d0\u793a\u8fdb\u884c\u66f4\u65b0\uff01",
                     GET_UNDATAINFO_ERROR).show();
                 new Thread(new CheckVersionTask(true)).start();
-                MainActivity.this.mDialog.cancel();
+                mDialog.cancel();
               } else {
-                MainActivity.this.imageView.setSessionId(reset.getSessionId());
-                MainActivity.this.imageView.setKeyvalue(reset.getKeyvalue());
-                MainActivity.this.sessionId = reset.getSessionId();
-                MainActivity.this.keyvalue = reset.getKeyvalue();
-                MainActivity.this.imageView.bitmap =
-                    BitmapUtils.getPicture(reset.getSessionId(), MainActivity.this.screenWidth,
-                        MainActivity.this.screenHeight).getBitmap();
-                MainActivity.this.logger.debug(
-                    "\u6311\u6218\u7801\u8fc7\u671f,\u91cd\u65b0\u83b7\u53d6\u56fe\u7247\u548ckey\u6210\u529f");
-                MainActivity.this.reqResource.setSessionId(
-                    MainActivity.this.imageView.getSessionId());
-                MainActivity.this.reqResource.setKeyvalue(
-                    MainActivity.this.imageView.getKeyvalue());
-                MainActivity.this.reqResource.setBitmap(MainActivity.this.imageView.bitmap);
-                MainActivity.this.mDialog.cancel();
-                Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
-                    .show();
+                imageView.setSessionId(reset.getSessionId());
+                imageView.setKeyvalue(reset.getKeyvalue());
+                sessionId = reset.getSessionId();
+                keyvalue = reset.getKeyvalue();
+                imageView.bitmap =
+                    BitmapUtils.getPicture(reset.getSessionId(), screenWidth, screenHeight)
+                        .getBitmap();
+
+                reqResource.setSessionId(imageView.getSessionId());
+                reqResource.setKeyvalue(imageView.getKeyvalue());
+                reqResource.setBitmap(imageView.bitmap);
+                mDialog.cancel();
+                Toast.makeText(getApplicationContext(), resultText, UPDATA_CLIENT).show();
               }
             } catch (Exception e) {
-              MainActivity.this.logger.error(new StringBuilder(
-                  "\u6311\u6218\u7801\u8fc7\u671f,\u91cd\u65b0\u83b7\u53d6\u56fe\u7247\u548ckey\u53d1\u751f\u5f02\u5e38")
-                  .append(e.getMessage())
-                  .toString());
-              MainActivity.this.mDialog.cancel();
-              Toast.makeText(MainActivity.this.getApplicationContext(),
+
+              mDialog.cancel();
+              Toast.makeText(getApplicationContext(),
                   "\u83b7\u53d6\u624b\u52bf\u5931\u8d25\uff0c\u8bf7\u70b9\u51fb\u6309\u94ae\u91cd\u65b0\u8bf7\u6c42\u624b\u52bf",
                   UPDATA_CLIENT).show();
             }
             break;
           case INIT_RESET_WIFI:
-            MainActivity.this.mDialog.cancel();
-            Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
-                .show();
+            mDialog.cancel();
+            Toast.makeText(getApplicationContext(), resultText, UPDATA_CLIENT).show();
             break;
           case UPDATA_CLIENT_FORCE:
-            MainActivity.this.mDialog.cancel();
-            MainActivity.this.exceptionView();
-            Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
-                .show();
+            mDialog.cancel();
+            exceptionView();
+            Toast.makeText(getApplicationContext(), resultText, UPDATA_CLIENT).show();
             break;
           case 100:
-            MainActivity.this.mDialog.cancel();
-            Toast.makeText(MainActivity.this.getApplicationContext(), resultText, UPDATA_CLIENT)
-                .show();
+            mDialog.cancel();
+            Toast.makeText(getApplicationContext(), resultText, UPDATA_CLIENT).show();
             break;
           default:
             break;
@@ -528,7 +505,7 @@ public class MainActivity extends BaseActivity {
           //Intent mainIntent = new Intent(context, SucessActivity.class);
           //intent.putExtra("authFlag", true);
           //context.startActivity(mainIntent);
-          //MainActivity.this.finish();
+          //finish();
         }
       }
     };
@@ -538,12 +515,12 @@ public class MainActivity extends BaseActivity {
         super.handleMessage(msg);
         switch (msg.what) {
           case UPDATA_CLIENT:
-            MainActivity.this.showUpdataDialog(false);
+            showUpdataDialog(false);
           case DOWN_ERROR:
-            Toast.makeText(MainActivity.this.getApplicationContext(),
-                "\u4e0b\u8f7d\u65b0\u7248\u672c\u5931\u8d25", GET_UNDATAINFO_ERROR).show();
+            Toast.makeText(getApplicationContext(), "\u4e0b\u8f7d\u65b0\u7248\u672c\u5931\u8d25",
+                GET_UNDATAINFO_ERROR).show();
           case UPDATA_CLIENT_FORCE:
-            MainActivity.this.showUpdataDialog(true);
+            showUpdataDialog(true);
           default:
             break;
         }
@@ -560,7 +537,6 @@ public class MainActivity extends BaseActivity {
     this.mSsid = this.mWifiInfo.getSSID().trim();
     this.mSsid = trim(this.mSsid);
     this.mConnMethod = 1;
-    this.logger.debug(new StringBuilder("showDialog==step2==mSsid=").append(this.mSsid).toString());
     View textEntryView = LayoutInflater.from(this).inflate(R.layout.dialoglayout, null);
     EditText edtInput = (EditText) textEntryView.findViewById(R.id.edtInput);
     Builder builder = new Builder(this);
@@ -571,7 +547,7 @@ public class MainActivity extends BaseActivity {
     builder.setPositiveButton("\u786e\u5b9a", new AnonymousClass_5(edtInput));
     builder.setNeutralButton("\u53d6\u6d88", new AnonymousClass_6(edtInput));
     builder.show();
-    this.logger.debug("showDialog==step3=");
+
   }
 
   private String getWifiMacAddress() {
@@ -582,7 +558,7 @@ public class MainActivity extends BaseActivity {
         return mac;
       }
       mac = info.getMacAddress().replaceAll(":", SimpleFormatter.DEFAULT_DELIMITER);
-      this.logger.debug(new StringBuilder("mac===").append(mac).toString());
+
       return mac;
     } catch (Exception e) {
       e.printStackTrace();
@@ -599,7 +575,7 @@ public class MainActivity extends BaseActivity {
     ArrayList localArrayList = new ArrayList();
     localArrayList.add(new BasicNameValuePair("username", usernametext));
     try {
-      String str = HttpUtils.sendContentByHttpClient(Config.realUrl + "/wf.do?code=9", sessionId,
+      String str = HttpUtils.sendContentByHttpPost(Config.realUrl + "/wf.do?code=9", sessionId,
           localArrayList);
 
       if ("discover00".equals(str)) {
@@ -620,7 +596,7 @@ public class MainActivity extends BaseActivity {
         return;
       }
     } catch (Exception localException) {
-      logger.error("发送Discover报文发生异常message" + localException.toString());
+
       return;
     }
     handler.sendEmptyMessageDelayed(1, 1000L);
@@ -633,7 +609,6 @@ public class MainActivity extends BaseActivity {
     if (wifiInfo == null || !wifiInfo.isConnected() || wifiInfo.getState() != State.CONNECTED) {
       return false;
     }
-    System.out.println(wifiInfo.toString());
     return true;
   }
 
@@ -652,7 +627,7 @@ public class MainActivity extends BaseActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
-    this.logger.debug("onCreate ==step1==========");
+
     IntentFilter filter = new IntentFilter();
     filter.addAction("mysurface");
     registerReceiver(this.receiver, filter);
@@ -667,11 +642,9 @@ public class MainActivity extends BaseActivity {
     }
     requestWindowFeature(GET_UNDATAINFO_ERROR);
     super.onCreate(savedInstanceState);
-    this.logger.info(
-        new StringBuilder("activityList.size()=====").append(activityList.size()).toString());
+
     if (activityList.size() > 1) {
-      this.logger.debug(new StringBuilder("activityList.size>1 ==usernametext ==========").append(
-          this.usernametext).toString());
+
       Log.d(TAG, "activityList.size>1");
       //Intent intent = new Intent();
       //intent.setClass(this, SucessActivity.class);
@@ -680,7 +653,6 @@ public class MainActivity extends BaseActivity {
       //finish();
       return;
     }
-    System.out.println(new StringBuilder("IP adress====").append(getLocalIpAddress()).toString());
     setContentView(R.layout.activity_main);
     this.gestureLayout = (LinearLayout) findViewById(R.id.auth_pic_layout);
     DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -688,9 +660,6 @@ public class MainActivity extends BaseActivity {
     this.screenWidth = displayMetrics.widthPixels;
     this.screenHeight = displayMetrics.heightPixels;
     this.username = (EditText) findViewById(R.id.username);
-    this.logger.debug(
-        new StringBuilder("onCreate ==step2====usernametext======").append(this.usernametext)
-            .toString());
     this.defaultAccFile = getSharedPreferences(SetAccountActivity.DEFAULT_ACCOUNT, UPDATA_CLIENT);
     this.sp = getSharedPreferences("passwordFile", UPDATA_CLIENT);
     this.loginFile = getSharedPreferences(Config.LOGININFOFILE, UPDATA_CLIENT);
@@ -707,50 +676,46 @@ public class MainActivity extends BaseActivity {
         return false;
       }
     });
-    this.logger.debug("onCreate ===step3=====");
     accountSeting.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
         Intent intent = new Intent();
         intent.setClass(MainActivity.this, SetAccountActivity.class);
-        MainActivity.this.startActivity(intent);
-        MainActivity.this.finish();
+        startActivity(intent);
+        finish();
       }
     });
-    this.logger.debug("onCreate ==initLoginUserName=step4=====");
     ((ImageView) findViewById(R.id.moreSelect)).setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
         switch (v.getId()) {
           case R.id.moreSelect:
-            if (MainActivity.this.popView == null) {
-              String[] mItems =
-                  (String[]) MainActivity.this.sp.getAll().keySet().toArray(new String[0]);
+            if (popView == null) {
+              String[] mItems = (String[]) sp.getAll().keySet().toArray(new String[0]);
               if (mItems.length > 0) {
-                MainActivity.this.initPopView(mItems);
-                if (MainActivity.this.popView.isShowing()) {
-                  MainActivity.this.popView.dismiss();
+                initPopView(mItems);
+                if (popView.isShowing()) {
+                  popView.dismiss();
                   return;
                 } else {
-                  MainActivity.this.popView.showAsDropDown(MainActivity.this.username);
+                  popView.showAsDropDown(username);
                   return;
                 }
               }
               Intent intent = new Intent();
               intent.setClass(MainActivity.this, SetAccountActivity.class);
-              MainActivity.this.startActivity(intent);
-              MainActivity.this.finish();
-              Toast.makeText(MainActivity.this.getApplicationContext(),
-                  "\u8bf7\u5148\u6dfb\u52a0\u5e10\u53f7", UPDATA_CLIENT).show();
-            } else if (MainActivity.this.popView.isShowing()) {
-              MainActivity.this.popView.dismiss();
+              startActivity(intent);
+              finish();
+              Toast.makeText(getApplicationContext(), "\u8bf7\u5148\u6dfb\u52a0\u5e10\u53f7",
+                  UPDATA_CLIENT).show();
+            } else if (popView.isShowing()) {
+              popView.dismiss();
             } else {
-              MainActivity.this.popView.showAsDropDown(MainActivity.this.username);
+              popView.showAsDropDown(username);
             }
           default:
             break;
         }
       }
     });
-    this.logger.debug("onCreate ==initLoginUserName=step5=====");
     ImageView refreshText = (ImageView) findViewById(R.id.refresh_pic);
     refreshText.setBackgroundResource(R.drawable.refresh);
     refreshText.setOnTouchListener(new OnTouchListener() {
@@ -763,7 +728,6 @@ public class MainActivity extends BaseActivity {
         return false;
       }
     });
-    this.logger.debug("onCreate ==initLoginUserName=step6=====");
     refreshText.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
 
@@ -780,7 +744,8 @@ public class MainActivity extends BaseActivity {
         if (imageView == null) {
           Log.e(TAG, "imageView == null");
           Log.d(TAG, "refresh image and key");
-          MainActivity.this.reqResource = MainActivity.this.setAuthPicAndKey();
+          reqResource = getAuthPicAndKey();
+          keyvalue = reqResource.getKeyvalue();
           Log.d(TAG, "refresh image and key done");
           return;
         } else {
@@ -795,32 +760,28 @@ public class MainActivity extends BaseActivity {
       }
     });
 
-    Log.d(TAG,"onCreate ==initLoginUserName=step7=====");
     if (!CheckNetworkState()) {
-      this.logger.debug("onCreate ==CheckNetworkState=false=====");
       exceptionView();
       shoWifiUnavaialableDialog();
     } else if (isPrivateIpAdress()) {
       exceptionView();
-      Toast.makeText(getApplicationContext(),
-          "网络异常，请检查网络！", UPDATA_CLIENT)
-          .show();
+      Toast.makeText(getApplicationContext(), "网络异常，请检查网络！", UPDATA_CLIENT).show();
     } else {
       //start http 
       try {
-        this.logger.debug("onCreate ===step8=====");
-        if (!BitmapUtils.initRealAddress(Config.firstRreqUrl)) {
-          Log.d(TAG, "!BitmapUtils.initRealAddress(Config.firstRreqUrl))");
+        if (!BitmapUtils.isHaveinitRealAddress(Config.firstRreqUrl)) {
+          Log.d(TAG, "!BitmapUtils.isHaveinitRealAddress(Config.firstRreqUrl))");
 
           //Intent intent = new Intent();
           //intent.setClass(this, SucessActivity.class);
           //intent.putExtra("authFlag", true);
           //startActivity(intent);
           //finish();
+          return;
         }
-        this.logger.debug("onCreate ===step9=====");
-        this.reqResource = setAuthPicAndKey();
-        this.logger.debug("onCreate ===step10=====");
+
+        this.reqResource = getAuthPicAndKey();
+
         if (!this.reqResource.isForceUpdated()) {
           new Thread(new CheckVersionTask(false)).start();
         }
@@ -828,9 +789,7 @@ public class MainActivity extends BaseActivity {
         exceptionView();
         Toast.makeText(getApplicationContext(),
             "\u7f51\u7edc\u5f02\u5e38\uff0c\u8bf7\u7a0d\u5019\u518d\u8bd5", UPDATA_CLIENT).show();
-        this.logger.error(new StringBuilder(
-            "\u8bf7\u6c42\u91cd\u5b9a\u5411\u5730\u5740\u53d1\u751f\u5f02\u5e38").append(
-            e.getMessage()).toString());
+
       }
     }
   }
@@ -893,14 +852,13 @@ public class MainActivity extends BaseActivity {
       builer.setMessage(new String(this.info.getDescription().getBytes(), "UTF-8"));
       builer.setPositiveButton("\u786e\u5b9a", new OnClickListener() {
         public void onClick(DialogInterface dialog, int which) {
-          MainActivity.this.logger.debug("\u4e0b\u8f7dapk,\u66f4\u65b0");
-          MainActivity.this.downLoadApk();
+
+          downLoadApk();
         }
       });
-      this.logger.error(new StringBuilder("button  \u663e\u793a======").append(force).toString());
+
       if (!force) {
-        this.logger.error(
-            new StringBuilder("button  \u53d6\u6d88 \u663e\u793a======").append(force).toString());
+
         builer.setNegativeButton("\u53d6\u6d88", new OnClickListener() {
           public void onClick(DialogInterface dialog, int which) {
             Process.killProcess(Process.myPid());
@@ -911,9 +869,7 @@ public class MainActivity extends BaseActivity {
       dialog.setCanceledOnTouchOutside(false);
       dialog.show();
     } catch (UnsupportedEncodingException e) {
-      this.logger.error(
-          new StringBuilder("\u5347\u7ea7\u4fe1\u606f\u8f6c\u6362\u7f16\u7801\u5f02\u5e38").append(
-              e.getMessage()).toString());
+
     }
   }
 
@@ -954,33 +910,29 @@ public class MainActivity extends BaseActivity {
     this.popView.setBackgroundDrawable(getResources().getDrawable(R.drawable.white));
   }
 
-  private RequestModel setAuthPicAndKey() {
+  private RequestModel getAuthPicAndKey() {
 
+    Log.v(TAG, "getAuthPicAndKey");
     if (isPrivateIpAdress()) {
 
       exceptionView();
-      Log.e(TAG,"isPrivateIpAdress");
+      Log.e(TAG, "isPrivateIpAdress");
       return null;
     }
-    
+
     this.gestureLayout.removeView(this.errView);
     try {
-      this.logger.debug("onCreate get key start");
       RequestModel requestResult =
           BitmapUtils.requestBeforeLogin(Config.firstRreqUrl, this.screenWidth, this.screenHeight,
               getVersionName(), intToIp(getLocalIpAddress()));
-      this.logger.debug("onCreate get key success");
+
       if (ReturnMessage.NATCHECK.equals(requestResult.getMessage())) {
         exceptionView();
       } else if (ReturnMessage.VERSIONCHECK.equals(requestResult.getMessage())) {
-        Toast.makeText(getApplicationContext(),
-            "\u60a8\u7684\u7248\u672c\u8fc7\u4f4e\uff0c\u8bf7\u6309\u201c\u786e\u5b9a\u201d\u6309\u94ae\u8fdb\u884c\u7248\u672c\u66f4\u65b0\uff01",
-            GET_UNDATAINFO_ERROR).show();
+        Toast.makeText(getApplicationContext(), "update available!", GET_UNDATAINFO_ERROR).show();
         new Thread(new CheckVersionTask(true)).start();
         requestResult.setForceUpdated(true);
       } else {
-        this.logger.debug("onCreate ==setAuthPicAndKey=step3=====");
-        System.out.println(new StringBuilder("imageView=====1=").append(this.imageView).toString());
         this.imageView = new MySurfaceView(this, requestResult.getBitmap(), this.sp, this.handler);
         LayoutParams params = new LayoutParams(-2, -2);
         this.imageView.setSessionId(requestResult.getSessionId());
@@ -989,14 +941,13 @@ public class MainActivity extends BaseActivity {
         this.gestureLayout.addView(this.imageView, params);
         this.sessionId = requestResult.getSessionId();
         this.keyvalue = requestResult.getKeyvalue();
-        System.out.println(new StringBuilder("imageView=====2=").append(this.imageView).toString());
+        Log.d(TAG,
+            "requestResult " + requestResult.getKeyvalue() + "/" + requestResult.getSessionId());
       }
       return requestResult;
     } catch (Exception e) {
       exceptionView();
-      this.logger.error(new StringBuilder(
-          "onCreate\u8bf7\u6c42\u624b\u52bf key\u8d44\u6e90\u53d1\u751f\u5f02\u5e38").append(
-          e.getMessage()).toString());
+
       Toast.makeText(getApplicationContext(),
           "\u83b7\u53d6\u624b\u52bf\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u6216\u7a0d\u5019\u518d\u8bd5",
           UPDATA_CLIENT).show();
@@ -1052,7 +1003,6 @@ public class MainActivity extends BaseActivity {
   private boolean isPrivateIpAdress() {
     boolean result;
     int netaddr = ntol(getLocalIpAddress());
-    System.out.println(netaddr);
     if (netaddr >= -1062731776 && netaddr <= -1062666241) {
       result = true;
     } else if (netaddr >= 167772160 && netaddr <= 184549375) {
@@ -1062,7 +1012,6 @@ public class MainActivity extends BaseActivity {
     } else {
       result = true;
     }
-    this.logger.debug(new StringBuilder("result ============").append(result).toString());
     //mock 
     //return result;
     return false;

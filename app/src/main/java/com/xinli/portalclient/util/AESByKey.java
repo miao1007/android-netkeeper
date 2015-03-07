@@ -1,6 +1,7 @@
 package com.xinli.portalclient.util;
 
 import android.annotation.SuppressLint;
+import android.support.annotation.NonNull;
 import com.google.code.microlog4android.Level;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -10,7 +11,7 @@ import org.dom4j.swing.XMLTableColumnDefinition;
 public class AESByKey {
   private static final String AES = "AES";
 
-  public static byte[] encrypt(byte[] src, String key) throws Exception {
+  public static byte[] encrypt(byte[] src, @NonNull String key) throws Exception {
     Cipher cipher = Cipher.getInstance(AES);
     cipher.init(1, new SecretKeySpec(key.getBytes(), AES));
     return cipher.doFinal(src);

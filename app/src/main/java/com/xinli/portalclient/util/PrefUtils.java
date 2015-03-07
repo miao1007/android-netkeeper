@@ -5,12 +5,12 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
 
-public class ShareUtil {
+public class PrefUtils {
     private static final String TAG = "ShareUtil";
     Context mContext;
     private SharedPreferences sharedVerifyURL;
 
-    public ShareUtil(Context c) {
+    public PrefUtils(Context c) {
         Log.d(TAG, " ShareUtil...");
         this.mContext = c;
     }
